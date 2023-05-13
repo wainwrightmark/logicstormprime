@@ -129,3 +129,11 @@ body {
   margin: auto;
   font-family: monospace;
 }
+
+
+.new-game-button, .undo-button, .clear-button{
+  padding: 20px;
+  font-size: x-large;
+  font-family: cursive;
+  border-radius: 5px;
+}

@@ -19,14 +19,21 @@ use crate::letter::Letter;
 #[store(storage = "local", storage_tab_sync)]
 pub struct GameState {
     pub perm: Perm,
+    pub solution: SolutionsState,
+
+    pub history: Vec<SolutionsState>
+}
+
+#[derive(PartialEq, Eq, Clone, Copy, serde:: Serialize, serde::Deserialize, Store, Debug, Default)]
+pub struct SolutionsState{
     pub letters: [Option<Letter>; 5],
     pub selected_index: u8,
 }
 
 impl GameState {
     pub fn is_real_word(&self) -> bool {
-        if self.letters.iter().all(|x| x.is_some()) {
-            let arr = self.letters.map(|x| x.unwrap());
+        if self.solution .letters.iter().all(|x| x.is_some()) {
+            let arr = self.solution.letters.map(|x| x.unwrap());
             return all_words()
                 .get(&self.perm)
                 .map(|x| x.contains(&arr))
@@ -42,10 +49,10 @@ impl GameState {
 
     pub fn possible_solutions_count(&self)->usize{
 
-        let count = self.letters.iter().flatten().count();
+        let count = self.solution.letters.iter().flatten().count();
 
         if count == 5 {
-            let arr = self.letters.map(|x| x.unwrap());
+            let arr = self.solution.letters.map(|x| x.unwrap());
             return all_words()
                 .get(&self.perm)
                 .map(|x| x.contains(&arr))
@@ -58,7 +65,7 @@ impl GameState {
         return all_words()
                 .get(&self.perm)
                 .map(|set| set.iter().filter(|x| {
-                    self.letters.iter().zip(x.iter()).all(|(l,r)|l.is_none() || l.unwrap() == *r )
+                    self.solution.letters.iter().zip(x.iter()).all(|(l,r)|l.is_none() || l.unwrap() == *r )
                 }).count()).unwrap_or_default();
 
     }
@@ -69,10 +76,10 @@ impl GameState {
     }
 
     pub fn is_legal(&self) -> bool {
-        if self.letters.iter().filter(|x| x.is_some()).count() <= 1 {
+        if self.solution.letters.iter().filter(|x| x.is_some()).count() <= 1 {
             return true;
         }
-        let mut arr = self.letters;
+        let mut arr = self.solution.letters;
         self.perm.invert().apply(&mut arr);
         arr.iter().flat_map(|x| x).is_sorted() && arr.iter().flat_map(|x| x).all_unique()
     }
@@ -82,7 +89,7 @@ impl GameState {
         let mut max = Letter::Z;
 
         let old_index = self.perm.element_at_index(index, |x| x);
-        let mut arr = self.letters;
+        let mut arr = self.solution.letters;
         self.perm.invert().apply(&mut arr);
         for i in 0..old_index {
             match arr[i as usize] {
@@ -172,6 +179,7 @@ pub enum GameMessage {
     ArrowRight,
     SelectIndex(u8),
     TypeLetter(Letter),
+    Undo
 }
 
 impl Reducer<GameState> for GameMessage {
@@ -179,27 +187,33 @@ impl Reducer<GameState> for GameMessage {
         let mut s = (*state).clone();
         match self {
             GameMessage::NewGame(perm) => {
+                s.history.clear();
                 if let Some(perm) = perm{
                     s.perm = perm;
+                    s.solution = Default::default();
                 }else{
                     let mut rng = ThreadRng::default();
-                    s.letters = Default::default();
-                    s.selected_index = 0;
+                    s.solution.letters = Default::default();
+                    s.solution.selected_index = 0;
                     let inner = rng.gen_range(0..=(Perm::get_last().inner()));
                     s.perm = Perm::from(inner);
                 }
 
             }
             GameMessage::Clear => {
-                s.letters = Default::default();
+                s.history.push(s.solution);
+                s.solution = Default::default();
             }
             GameMessage::SelectIndex(i) => {
-                s.selected_index = i % 5;
+                //don't mess with history here
+                s.solution.selected_index = i % 5;
             }
             GameMessage::TypeLetter(l) => {
-                s.letters[s.selected_index as usize] = Some(l);
-                if s.selected_index < 4{
-                    s.selected_index = s.selected_index + 1
+                s.history.push(s.solution);
+
+                s.solution.letters[s.solution.selected_index as usize] = Some(l);
+                if s.solution.selected_index < 4{
+                    s.solution.selected_index += 1
                 }
                 if !s.is_legal() {
                     return state;
@@ -207,18 +221,27 @@ impl Reducer<GameState> for GameMessage {
             }
             GameMessage::None => return state,
             GameMessage::Delete => {
-                s.letters[s.selected_index as usize] = None;
+                s.history.push(s.solution);
+                s.solution.letters[s.solution.selected_index as usize] = None;
             },
             GameMessage::Backspace => {
-                s.letters[s.selected_index as usize] = None;
-                s.selected_index = s.selected_index.saturating_sub(1);
+                s.history.push(s.solution);
+
+                s.solution.letters[s.solution.selected_index as usize] = None;
+                s.solution.selected_index = s.solution.selected_index.saturating_sub(1);
             }
             GameMessage::ArrowLeft => {
-                s.selected_index = s.selected_index.saturating_sub(1);
+                s.solution.selected_index = s.solution.selected_index.saturating_sub(1);
             }
             GameMessage::ArrowRight => {
-                if s.selected_index < 4{
-                    s.selected_index = s.selected_index + 1
+                if s.solution.selected_index < 4{
+                    s.solution.selected_index +=  1
+                }
+            },
+            GameMessage::Undo =>{
+
+                if let Some(solution) = s.history.pop(){
+                    s.solution = solution;
                 }
             }
         }
@@ -229,15 +252,17 @@ impl Reducer<GameState> for GameMessage {
 
 #[cfg(test)]
 mod tests {
-    use crate::letter::Letter;
+    use crate::{letter::Letter, state::SolutionsState};
 
     use super::{GameState, Perm, all_words};
     #[test]
     pub fn test_letters() {
         let state = GameState {
             perm: Default::default(),
-            letters: [None, Some(Letter::C), None, Some(Letter::I), None],
-            selected_index: 0,
+            solution: SolutionsState{
+                letters: [None, Some(Letter::C), None, Some(Letter::I), None],
+                selected_index: 0,
+            }, history: Default::default()
         };
 
         assert!(state.is_legal());

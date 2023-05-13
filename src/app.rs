@@ -11,7 +11,7 @@ use crate::{
     letter::Letter,
     slots::Slots,
     state::{GameMessage, GameState, Perm},
-    answers::Answers
+    answers::Answers, controls::Controls
 };
 
 #[function_component(App)]
@@ -66,6 +66,11 @@ pub fn app() -> Html {
                 <br/>
                 <div class="centered">
                     <Keyboard/>
+                </div>
+                <br/>
+                <br/>
+                <div class="centered">
+                    <Controls/>
                 </div>
                 <div class="centered">
                     <Answers/>

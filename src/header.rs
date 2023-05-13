@@ -24,7 +24,7 @@ pub fn slots(_props: &HeaderProps) -> Html {
     html!(
         <div class="header">
         {win}
-        <button class="button" onclick={on_new_game_click}>{"New Game"}</button>
+        <button class="new-game-button" onclick={on_new_game_click}>{"New Game"}</button>
         </div>
     )
 }

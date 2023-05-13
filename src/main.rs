@@ -19,6 +19,7 @@ pub mod keyboard;
 pub mod slots;
 pub mod header;
 pub mod answers;
+pub mod controls;
 
 fn main() {
     wasm_logger::init(wasm_logger::Config::default());

@@ -32,11 +32,11 @@ pub fn slot(props: &SlotProps) -> Html {
 
     let number = state.perm.element_at_index(index, |x| x);
 
-    let letter = state.letters[index as usize]
+    let letter = state.solution.letters[index as usize]
         .map(|x| x.to_string())
         .unwrap_or_default();
 
-    let class = if index == state.selected_index {
+    let class = if index == state.solution.selected_index {
         classes!("slot", "slot-focused")
     } else {
         classes!("slot")
