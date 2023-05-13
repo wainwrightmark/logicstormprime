@@ -13,7 +13,7 @@ pub fn keyboard(_props: &KeyboardProps) -> Html {
 
     let (state, _) = use_store::<GameState>();
     let allowed_range = state.legal_letters_for_index(state.selected_index).unwrap_or_else(||Letter::Z..=Letter::A);
-    let backspace_enabled = state.letters[state.selected_index].is_some();
+    let backspace_enabled = state.letters[state.selected_index as usize].is_some();
     html!(
         <div class="keyboard">
             <KeyRow range={Letter::A..=Letter::I} allowed_range={allowed_range.clone()}/>

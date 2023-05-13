@@ -21,7 +21,7 @@ pub fn slots(_props: &SlotsProps) -> Html {
 
 #[derive(Properties, PartialEq)]
 pub struct SlotProps {
-    pub index: usize,
+    pub index: u8,
 }
 
 #[function_component(Slot)]
@@ -32,7 +32,7 @@ pub fn slot(props: &SlotProps) -> Html {
 
     let number = state.perm.element_at_index(index, |x| x);
 
-    let letter = state.letters[index]
+    let letter = state.letters[index as usize]
         .map(|x| x.to_string())
         .unwrap_or_default();
 

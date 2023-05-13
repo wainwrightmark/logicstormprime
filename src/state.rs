@@ -20,7 +20,7 @@ use crate::letter::Letter;
 pub struct GameState {
     pub perm: Perm,
     pub letters: [Option<Letter>; 5],
-    pub selected_index: usize,
+    pub selected_index: u8,
 }
 
 impl GameState {
@@ -72,7 +72,7 @@ impl GameState {
         arr.iter().flat_map(|x| x).is_sorted() && arr.iter().flat_map(|x| x).all_unique()
     }
 
-    pub fn legal_letters_for_index(&self, index: usize) -> Option<RangeInclusive<Letter>> {
+    pub fn legal_letters_for_index(&self, index: u8) -> Option<RangeInclusive<Letter>> {
         let mut min = Letter::A;
         let mut max = Letter::Z;
 
@@ -80,7 +80,7 @@ impl GameState {
         let mut arr = self.letters;
         self.perm.invert().apply(&mut arr);
         for i in 0..old_index {
-            match arr[i] {
+            match arr[i as usize] {
                 Some(l) => {
                     if let Some(new_min) = Step::forward_checked(l, 1) {
                         min = new_min
@@ -98,7 +98,7 @@ impl GameState {
             }
         }
 
-        for j in ((old_index + 1)..arr.len()).rev() {
+        for j in (((old_index + 1) as usize)..arr.len()).rev() {
             match arr[j] {
                 Some(l) => {
                     if let Some(new_max) = Step::backward_checked(l, 1) {
@@ -165,7 +165,7 @@ pub enum GameMessage {
     Delete,
     ArrowLeft,
     ArrowRight,
-    SelectIndex(usize),
+    SelectIndex(u8),
     TypeLetter(Letter),
 }
 
@@ -180,7 +180,7 @@ impl Reducer<GameState> for GameMessage {
                     let mut rng = ThreadRng::default();
                     s.letters = Default::default();
                     s.selected_index = 0;
-                    let inner = rng.gen_range(0..=(Perm::get_max().inner()));
+                    let inner = rng.gen_range(0..=(Perm::get_last().inner()));
                     s.perm = Perm::from(inner);
                 }
 
@@ -192,7 +192,7 @@ impl Reducer<GameState> for GameMessage {
                 s.selected_index = i % 5;
             }
             GameMessage::TypeLetter(l) => {
-                s.letters[s.selected_index] = Some(l);
+                s.letters[s.selected_index as usize] = Some(l);
                 if s.selected_index < 4{
                     s.selected_index = s.selected_index + 1
                 }
@@ -202,10 +202,10 @@ impl Reducer<GameState> for GameMessage {
             }
             GameMessage::None => return state,
             GameMessage::Delete => {
-                s.letters[s.selected_index] = None;
+                s.letters[s.selected_index as usize] = None;
             },
             GameMessage::Backspace => {
-                s.letters[s.selected_index] = None;
+                s.letters[s.selected_index as usize] = None;
                 s.selected_index = s.selected_index.saturating_sub(1);
             }
             GameMessage::ArrowLeft => {
