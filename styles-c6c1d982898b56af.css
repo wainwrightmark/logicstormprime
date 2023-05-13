@@ -118,3 +118,28 @@ body {
     max-width: 33.3333333333%;
   }
 }
+
+
+
+.answers{
+  margin: auto;
+}
+
+.answer-table{
+  margin: auto;
+  font-family: monospace;
+}
+
+
+.new-game-button, .undo-button, .clear-button, .basic-game-button{
+  padding: 5px;
+  font-size: x-large;
+  font-family: cursive;
+  border-radius: 5px;
+}
+
+
+summary{
+  font-size: large;
+  font-weight: bold;
+}
