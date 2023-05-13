@@ -40,7 +40,7 @@ impl GameState {
         .get(&self.perm).map(|x|x.len()).unwrap_or_default();
     }
 
-    pub fn possible_solutions(&self)->usize{
+    pub fn possible_solutions_count(&self)->usize{
 
         let count = self.letters.iter().flatten().count();
 
@@ -61,6 +61,11 @@ impl GameState {
                     self.letters.iter().zip(x.iter()).all(|(l,r)|l.is_none() || l.unwrap() == *r )
                 }).count()).unwrap_or_default();
 
+    }
+
+    pub fn all_solutions(&self)-> Option<&BTreeSet<[Letter;5]>>{
+        return all_words()
+        .get(&self.perm)
     }
 
     pub fn is_legal(&self) -> bool {

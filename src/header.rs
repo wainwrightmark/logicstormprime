@@ -13,10 +13,10 @@ pub fn slots(_props: &HeaderProps) -> Html {
 
 
     let win = if state.is_real_word() {
-        html!(<h5>{"Congratulations"} </h5>)
+        html!(<h2>{"Congratulations"} </h2>)
     } else {
-        let solutions = state.possible_solutions();
-        html!(<h5>{ format!("{solutions:3<} Possible Solutions")} </h5>)
+        let solutions = state.possible_solutions_count();
+        html!(<h3>{ format!("{solutions:3<} Possible Solutions")} </h3>)
     };
 
     let on_new_game_click = dispatch.apply_callback(|_| GameMessage::NewGame(None));
