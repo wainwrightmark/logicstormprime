@@ -131,9 +131,15 @@ body {
 }
 
 
-.new-game-button, .undo-button, .clear-button{
-  padding: 20px;
+.new-game-button, .undo-button, .clear-button, .basic-game-button{
+  padding: 5px;
   font-size: x-large;
   font-family: cursive;
   border-radius: 5px;
+}
+
+
+summary{
+  font-size: large;
+  font-weight: bold;
 }

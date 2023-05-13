@@ -1,7 +1,7 @@
 use yew::prelude::*;
 use yewdux::prelude::use_store;
 
-use crate::state::{GameMessage, GameState};
+use crate::state::{GameMessage, GameState, Perm};
 
 #[derive(Properties, PartialEq)]
 pub struct HeaderProps {}
@@ -20,11 +20,13 @@ pub fn slots(_props: &HeaderProps) -> Html {
     };
 
     let on_new_game_click = dispatch.apply_callback(|_| GameMessage::NewGame(None));
+    let on_basic_game_click = dispatch.apply_callback(|_| GameMessage::NewGame(Some(Perm::default())));
 
     html!(
         <div class="header">
         {win}
         <button class="new-game-button" onclick={on_new_game_click}>{"New Game"}</button>
+        <button class="basic-game-button" onclick={on_basic_game_click}>{"Basic Game"}</button>
         </div>
     )
 }

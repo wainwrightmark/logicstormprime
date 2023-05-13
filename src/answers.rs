@@ -30,13 +30,16 @@ pub fn slots(_props: &AnswersProps) -> Html {
     //let lines = state.possible_solutions_count()
 
     html!(
-        <div class="answers">
-        <h3>
+        <details class="answers">
+        <summary>
+        
             {"Possible Solutions"}
-        </h3>
+        
+        
+        </summary>
         <table class="answer-table">
         {rows}
         </table>
-        </div>
+        </details>
     )
 }

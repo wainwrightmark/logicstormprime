@@ -54,6 +54,9 @@ pub fn app() -> Html {
         <div {onkeydown} class="container">
             <div class="sm-4">
                 <div class="centered">
+                    <h1>{"Logic Storm Prime"}</h1 >
+                </div>
+                <div class="centered">
                     <Header />
                 </div>
 
@@ -72,6 +75,8 @@ pub fn app() -> Html {
                 <div class="centered">
                     <Controls/>
                 </div>
+                <br/>
+                <br/>
                 <div class="centered">
                     <Answers/>
                 </div>
